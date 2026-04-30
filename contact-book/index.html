@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Book App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>
+                    <i class="fas fa-address-book"></i> Contact Book
+                </h1>
+                <p class="subtitle">Manage your contacts efficiently</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Add Contact Button -->
+                <button id="addContactBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus"></i> Add Contact
+                </button>
+
+                <!-- Search Box -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Search contacts..."
+                        autocomplete="off"
+                    >
+                    <button id="clearSearchBtn" class="clear-search-btn hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <h3>Filter by</h3>
+                    <div class="filter-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="filter-checkbox" value="all" checked>
+                            <span>All Contacts</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="filter-checkbox" value="favorite">
+                            <span><i class="fas fa-star"></i> Favorites</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="filter-checkbox" value="work">
+                            <span><i class="fas fa-briefcase"></i> Work</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="filter-checkbox" value="personal">
+                            <span><i class="fas fa-user"></i> Personal</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="filter-checkbox" value="family">
+                            <span><i class="fas fa-heart"></i> Family</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats-box">
+                    <h3>Statistics</h3>
+                    <div class="stat-item">
+                        <span>Total Contacts</span>
+                        <span class="stat-value" id="totalContacts">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Favorites</span>
+                        <span class="stat-value" id="favoriteCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Birthdays This Month</span>
+                        <span class="stat-value" id="birthdayCount">0</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="sidebar-actions">
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button id="importBtn" class="btn btn-secondary">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                    <input type="file" id="importFile" class="hidden-input" accept=".json">
+                </div>
+            </aside>
+
+            <!-- Main Area -->
+            <div class="main-area">
+                <!-- Contacts List View -->
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="list">
+                        <i class="fas fa-list"></i> List
+                    </button>
+                    <button class="view-btn" data-view="grid">
+                        <i class="fas fa-th"></i> Grid
+                    </button>
+                    <button class="view-btn" data-view="table">
+                        <i class="fas fa-table"></i> Table
+                    </button>
+                </div>
+
+                <!-- List View -->
+                <div id="listView" class="view active">
+                    <ul id="contactList" class="contact-list">
+                        <!-- Contacts will be inserted here -->
+                    </ul>
+                </div>
+
+                <!-- Grid View -->
+                <div id="gridView" class="view">
+                    <div id="contactGrid" class="contact-grid">
+                        <!-- Contacts will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="tableView" class="view">
+                    <div class="table-wrapper">
+                        <table id="contactTable" class="contact-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contactTableBody">
+                                <!-- Contacts will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state hidden">
+                    <div class="empty-state-content">
+                        <i class="fas fa-inbox"></i>
+                        <h2>No Contacts Found</h2>
+                        <p>Start by adding a new contact or adjusting your search/filter criteria.</p>
+                        <button id="emptyAddBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Your First Contact
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal for Add/Edit Contact -->
+        <div id="contactModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Add Contact</h2>
+                    <button class="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="contactForm" class="contact-form">
+                    <!-- Personal Info -->
+                    <fieldset>
+                        <legend>Personal Information</legend>
+                        
+                        <div class="form-group">
+                            <label for="firstName">First Name <span class="required">*</span></label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName"
+                                placeholder="John"
+                                required
+                            >
+                            <span class="error-message" id="firstNameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Last Name <span class="required">*</span></label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName"
+                                placeholder="Doe"
+                                required
+                            >
+                            <span class="error-message" id="lastNameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email"
+                                placeholder="john@example.com"
+                            >
+                            <span class="error-message" id="emailError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone"
+                                placeholder="+1 (555) 123-4567"
+                            >
+                            <span class="error-message" id="phoneError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birthDate">Date of Birth</label>
+                            <input 
+                                type="date" 
+                                id="birthDate" 
+                                name="birthDate"
+                            >
+                        </div>
+                    </fieldset>
+
+                    <!-- Contact Details -->
+                    <fieldset>
+                        <legend>Contact Details</legend>
+
+                        <div class="form-group">
+                            <label for="company">Company</label>
+                            <input 
+                                type="text" 
+                                id="company" 
+                                name="company"
+                                placeholder="ABC Corporation"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jobTitle">Job Title</label>
+                            <input 
+                                type="text" 
+                                id="jobTitle" 
+                                name="jobTitle"
+                                placeholder="Software Engineer"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea 
+                                id="address" 
+                                name="address"
+                                placeholder="123 Main Street, City, State ZIP"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="website">Website</label>
+                            <input 
+                                type="url" 
+                                id="website" 
+                                name="website"
+                                placeholder="https://example.com"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <textarea 
+                                id="notes" 
+                                name="notes"
+                                placeholder="Add any additional notes..."
+                                rows="3"
+                            ></textarea>
+                        </div>
+                    </fieldset>
+
+                    <!-- Categorization -->
+                    <fieldset>
+                        <legend>Categorization</legend>
+
+                        <div class="form-group">
+                            <label for="category">Category <span class="required">*</span></label>
+                            <select id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="personal">Personal</option>
+                                <option value="work">Work</option>
+                                <option value="family">Family</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <span class="error-message" id="categoryError"></span>
+                        </div>
+
+                        <div class="form-group checkbox">
+                            <input 
+                                type="checkbox" 
+                                id="isFavorite" 
+                                name="isFavorite"
+                            >
+                            <label for="isFavorite">Add to Favorites</label>
+                        </div>
+                    </fieldset>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Contact
+                        </button>
+                        <button type="button" id="cancelBtn" class="btn btn-secondary">
+                            Cancel
+                        </button>
+                        <button type="button" id="deleteBtn" class="btn btn-danger hidden">
+                            <i class="fas fa-trash"></i> Delete Contact
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact Detail Modal -->
+        <div id="detailModal" class="modal hidden">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2 id="detailName"></h2>
+                    <button class="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="contact-detail-content">
+                    <div class="detail-section">
+                        <h3>Contact Information</h3>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-envelope"></i> Email:
+                            </span>
+                            <span class="value" id="detailEmail">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-phone"></i> Phone:
+                            </span>
+                            <span class="value" id="detailPhone">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-globe"></i> Website:
+                            </span>
+                            <span class="value" id="detailWebsite">-</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Professional Information</h3>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-building"></i> Company:
+                            </span>
+                            <span class="value" id="detailCompany">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-briefcase"></i> Job Title:
+                            </span>
+                            <span class="value" id="detailJobTitle">-</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Personal Information</h3>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-map-marker-alt"></i> Address:
+                            </span>
+                            <span class="value" id="detailAddress">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">
+                                <i class="fas fa-birthday-cake"></i> Date of Birth:
+                            </span>
+                            <span class="value" id="detailBirthDate">-</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Additional Notes</h3>
+                        <div class="detail-item">
+                            <span class="value" id="detailNotes">-</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-actions">
+                        <button id="detailEditBtn" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button id="detailDeleteBtn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        <button id="detailCloseBtn" class="btn btn-secondary">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
